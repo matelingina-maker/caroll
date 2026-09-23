@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carol • Chapter XXI</title>
+
+  <!-- Google Fonts: Editorial Serif + Luxury Title + Clean Sans + Code Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #07050a;
+      --card-bg: rgba(18, 13, 26, 0.85);
+      --accent-gold: #e2b857;
+      --accent-rose: #f472b6;
+      --accent-purple: #c084fc;
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
+      --font-title: 'Cinzel', serif;
+      --font-serif: 'Cormorant Garamond', serif;
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem 1rem;
+      overflow-x: hidden;
+      line-height: 1.8;
+      position: relative;
+    }
+
+    /* Ambient Dynamic Background Glows */
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: 
+        radial-gradient(circle at 20% 20%, rgba(192, 132, 252, 0.12), transparent 45%),
+        radial-gradient(circle at 80% 80%, rgba(244, 114, 182, 0.12), transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(226, 184, 87, 0.05), transparent 60%);
+    }
+
+    .container {
+      position: relative;
+      z-index: 5;
+      width: 100%;
+      max-width: 850px;
+      margin: 0 auto;
+    }
+
+    /* Page Navigation Indicator */
+    .progress-bar {
+      display: flex;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-bottom: 2rem;
+    }
+
+    .step-dot {
+      width: 40px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      transition: all 0.5s ease;
+    }
+
+    .step-dot.active {
+      background: linear-gradient(90deg, var(--accent-rose), var(--accent-purple));
+      box-shadow: 0 0 12px rgba(244, 114, 182, 0.5);
+    }
+
+    .step-dot.completed {
+      background: var(--accent-gold);
+    }
+
+    /* Page View Cards (Single Page Mode) */
+    .page-card {
+      display: none; /* Hidden by default */
+      background: var(--card-bg);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 28px;
+      padding: 3.5rem 3rem;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.8);
+      animation: fadeInPage 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .page-card.active {
+      display: block; /* Only active page shows */
+    }
+
+    @keyframes fadeInPage {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Header Styling */
+    .chapter-tag {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--accent-rose);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-title {
+      font-family: var(--font-title);
+      font-size: clamp(2rem, 4vw, 3rem);
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent-gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 2rem;
+      line-height: 1.2;
+    }
+
+    /* Image Display Area */
+    .image-container {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      margin-bottom: 2rem;
+      max-height: 480px;
+    }
+
+    .image-container img {
+      width: 100%;
+      height: 480px;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Paragraph Formatting */
+    .quote-box {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-style: italic;
+      color: var(--accent-gold);
+      border-left: 3px solid var(--accent-gold);
+      padding-left: 1.2rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.4;
+    }
+
+    .description-text {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+    }
+
+    /* Task & Question Box */
+    .task-box {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px dashed rgba(244, 114, 182, 0.3);
+      border-radius: 18px;
+      padding: 2rem;
+      margin-top: 1rem;
+    }
+
+    .task-title {
+      font-family: var(--font-title);
+      font-size: 1rem;
+      color: var(--accent-rose);
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+
+    .task-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 1.2rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.8rem;
+    }
+
+    .custom-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 0.9rem 1.2rem;
+      color: #fff;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .custom-input:focus {
+      border-color: var(--accent-rose);
+    }
+
+    .next-btn {
+      background: linear-gradient(135deg, var(--accent-rose), var(--accent-purple));
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 0.9rem 1.8rem;
+      font-family: var(--font-title);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .next-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2deg);
+      box-shadow: 0 10px 25px rgba(192, 132, 252, 0.4);
+    }
+
+    .error-msg {
+      color: #f43f5e;
+      font-size: 0.85rem;
+      margin-top: 0.8rem;
+      display: none;
+    }
+
+    /* Final Letter Presentation */
+    .letter-card {
+      background: rgba(12, 8, 18, 0.95);
+      border: 1px solid var(--accent-gold);
+      border-radius: 24px;
+      padding: 3.5rem 3rem;
+      box-shadow: 0 0 60px rgba(226, 184, 87, 0.15);
+    }
+
+    .letter-salutation {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      color: var(--accent-gold);
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+
+    .letter-paragraph {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      color: #f1f5f9;
+      line-height: 2;
+      margin-bottom: 1.8rem;
+    }
+
+    .letter-signature {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      font-style: italic;
+      color: var(--accent-gold);
+      text-align: right;
+      margin-top: 3rem;
+      border-top: 1px solid rgba(226, 184, 87, 0.2);
+      padding-top: 1.5rem;
+    }
+
+    /* Terminal Cipher Screen */
+    .terminal-box {
+      font-family: var(--font-mono);
+      background: rgba(0, 0, 0, 0.8);
+      border: 1px dashed var(--accent-purple);
+      padding: 2rem;
+      border-radius: 16px;
+      color: var(--accent-rose);
+      margin-bottom: 2rem;
+      min-height: 140px;
+      word-break: break-all;
+    }
+
+    @media (max-width: 650px) {
+      .page-card, .letter-card {
+        padding: 2rem 1.5rem;
+      }
+      .image-container img {
+        height: 350px;
+      }
+      .input-row {
+        flex-direction: column;
+      }
+      .next-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-bg"></div>
+
+  <div class="container">
+
+    <!-- Progress Dots -->
+    <div class="progress-bar">
+      <div class="step-dot active" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+      <div class="step-dot" id="dot-3"></div>
+      <div class="step-dot" id="dot-4"></div>
+      <div class="step-dot" id="dot-5"></div>
+    </div>
+
+    <!-- ================= PAGE 1 ================= -->
+    <section class="page-card active" id="page-1">
+      <span class="chapter-tag">Chapter I • Unfiltered Radiance</span>
+      <h1 class="page-title">The Warmth of Joy</h1>
+
+      <div class="image-container">
+        <img src="IMG-20260923-WA0037.jpg" alt="Carol Smiling">
+      </div>
+
+      <div class="quote-box">
+        "Her laughter carries the quiet strength of unbothered grace."
+      </div>
+
+      <p class="description-text">
+        There is an authentic, effortless beauty in genuine happiness. This capture holds a serene light that brightens everything around it—a gentle reminder of how captivating real joy looks.
+      </p>
+
+      <div class="task-box">
+        <div class="task-title">🔒 Unlock Chapter II</div>
+        <div class="task-desc">What is the standard name of the birthday girl being celebrated today?</div>
+        <div class="input-row">
+          <input type="text" id="ans-1" class="custom-input" placeholder="Type her name...">
+          <button class="next-btn" onclick="checkPage(1)">Continue to Chapter II →</button>
+        </div>
+        <div class="error-msg" id="err-1">Please enter her name: "Carol".</div>
+      </div>
+    </section>
+
+    <!-- ================= PAGE 2 ================= -->
+    <section class="page-card" id="page-2">
+      <span class="chapter-tag">Chapter II • Artistic Resonance</span>
+      <h1 class="page-title">The Soul of Harmony</h1>
+
+      <div class="image-container">
+        <img src="IMG-20260923-WA0036.jpg" alt="Carol with Guitar">
+      </div>
+
+      <div class="quote-box">
+        "Where words fall short, melody speaks what the heart quietly holds."
+      </div>
+
+      <p class="description-text">
+        Artistry is not merely a hobby; it is an expression of character. Held in quiet composure with the guitar, this moment reflects depth, creativity, and the soulful rhythm she carries within.
+      </p>
+
+      <div class="task-box">
+        <div class="task-title">🔒 Unlock Chapter III</div>
+        <div class="task-desc">What milestone year in her life journey is Carol stepping into today?</div>
+        <div class="input-row">
+          <input type="text" id="ans-2" class="custom-input" placeholder="Enter age milestone...">
+          <button class="next-btn" onclick="checkPage(2)">Continue to Chapter III →</button>
+        </div>
+        <div class="error-msg" id="err-2">Please enter the milestone number: "21".</div>
+      </div>
+    </section>
+
+    <!-- ================= PAGE 3 ================= -->
+    <section class="page-card" id="page-3">
+      <span class="chapter-tag">Chapter III • Inner Quiet</span>
+      <h1 class="page-title">Peaceful Composure</h1>
+
+      <div class="image-container">
+        <img src="IMG-20260923-WA0035.jpg" alt="Carol with Headphones">
+      </div>
+
+      <div class="quote-box">
+        "In a busy world, quiet self-assurance is the ultimate grace."
+      </div>
+
+      <p class="description-text">
+        Immersed in her own sound and space, this portrait captures poise and stillness. It speaks to someone grounded in her own rhythm, unmoved by external distractions.
+      </p>
+
+      <div class="task-box">
+        <div class="task-title">🔒 Unlock Chapter IV</div>
+        <div class="task-desc">Type any word that best describes her essence (e.g., Grace, Beauty, Joy, Harmony).</div>
+        <div class="input-row">
+          <input type="text" id="ans-3" class="custom-input" placeholder="Enter word...">
+          <button class="next-btn" onclick="checkPage(3)">Continue to Chapter IV →</button>
+        </div>
+        <div class="error-msg" id="err-3">Please type at least 3 letters to proceed.</div>
+      </div>
+    </section>
+
+    <!-- ================= PAGE 4 ================= -->
+    <section class="page-card" id="page-4">
+      <span class="chapter-tag">Chapter IV • The Horizon</span>
+      <h1 class="page-title">Unshakable Confidence</h1>
+
+      <div class="image-container">
+        <img src="IMG-20260923-WA0034.jpg" alt="Carol with Sunglasses">
+      </div>
+
+      <div class="quote-box">
+        "Stepping forward with clarity, style, and unyielding purpose."
+      </div>
+
+      <p class="description-text">
+        Sunlight and confidence aligned. This final memory showcases readiness and poise, stepping forward into a future filled with distinction and boundless success.
+      </p>
+
+      <div class="task-box">
+        <div class="task-title">🔑 Final Decryption Authorization</div>
+        <div class="task-desc">Type "Carol" one last time to authorize decryption of her birthday blessing.</div>
+        <div class="input-row">
+          <input type="text" id="ans-4" class="custom-input" placeholder="Authorization key...">
+          <button class="next-btn" onclick="checkPage(4)">Access Cipher Vault →</button>
+        </div>
+        <div class="error-msg" id="err-4">Key is "Carol".</div>
+      </div>
+    </section>
+
+    <!-- ================= PAGE 5: DECRYPTION TERMINAL & FORMATTED LETTER ================= -->
+    <section class="page-card" id="page-5">
+      <span class="chapter-tag" style="text-align: center;">Encrypted Archive • Chapter XXI</span>
+      <h1 class="page-title" style="text-align: center; margin-bottom: 1.5rem;">Deciphering Blessing</h1>
+
+      <div class="terminal-box" id="cipher-box">
+        01001000 01100001 01110000 01110000 01111001 00100000 00110010 00110001 01110011 01110100 00100000 01000011 01100001 01110010 01101111 01101100... [LOCKED CIPHER DATA]
+      </div>
+
+      <div style="text-align: center;" id="decrypt-btn-wrapper">
+        <button class="next-btn" style="padding: 1rem 2.5rem; font-size: 0.95rem;" onclick="runDecryption()">
+          Decrypt Message 🗝️
+        </button>
+      </div>
+
+      <!-- REVEALED FORMATTED LETTER -->
+      <div class="letter-card" id="final-letter" style="display: none;">
+        
+        <div class="letter-salutation">Dearest Carol,</div>
+
+        <p class="letter-paragraph">
+          Stepping into your 21st year is a monumental threshold—a transition into greater wisdom, clearer purpose, and beautiful new horizons. On this extraordinary day, I take a moment to honor the gift of who you are and the distinct light you bring into the world.
+        </p>
+
+        <p class="letter-paragraph">
+          You possess a rare and magnetic combination of gentle warmth, creative soulfulness, and a quiet, unshakable grace. Whether through your joyful smile, your artistic rhythm, or the poise you carry into every room, you inspire everyone blessed enough to know you.
+        </p>
+
+        <p class="letter-paragraph">
+          My deepest wish and prayer for you as you begin this 21st chapter is that Almighty God grants you peace that guards your heart, favor that opens divine doors, and the fulfillment of every silent prayer you hold. May your path be marked by continuous joy, health, and greatness.
+        </p>
+
+        <p class="letter-paragraph" style="font-weight: 600; color: var(--accent-gold);">
+          Happy 21st Birthday, Carol. May this milestone year be your most magnificent chapter yet! 🎂✨
+        </p>
+
+        <div class="letter-signature">
+          With deep admiration & warm wishes,<br>
+          Happy 21st Birthday 👑
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    /* Wizard Navigation Logic */
+    function checkPage(pageNum) {
+      if (pageNum === 1) {
+        const val = document.getElementById('ans-1').value.trim().toLowerCase();
+        if (val.includes('carol')) {
+          switchPage(1, 2);
+        } else {
+          showError('err-1');
+        }
+      } else if (pageNum === 2) {
+        const val = document.getElementById('ans-2').value.trim();
+        if (val === '21' || val.toLowerCase().includes('twenty one')) {
+          switchPage(2, 3);
+        } else {
+          showError('err-2');
+        }
+      } else if (pageNum === 3) {
+        const val = document.getElementById('ans-3').value.trim();
+        if (val.length >= 3) {
+          switchPage(3, 4);
+        } else {
+          showError('err-3');
+        }
+      } else if (pageNum === 4) {
+        const val = document.getElementById('ans-4').value.trim().toLowerCase();
+        if (val.includes('carol')) {
+          switchPage(4, 5);
+        } else {
+          showError('err-4');
+        }
+      }
+    }
+
+    function switchPage(current, next) {
+      document.getElementById(`page-${current}`).classList.remove('active');
+      document.getElementById(`page-${next}`).classList.add('active');
+
+      document.getElementById(`dot-${current}`).classList.remove('active');
+      document.getElementById(`dot-${current}`).classList.add('completed');
+      document.getElementById(`dot-${next}`).classList.add('active');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showError(errId) {
+      document.getElementById(errId).style.display = 'block';
+    }
+
+    /* Matrix Decryption Effect */
+    function runDecryption() {
+      const cipherBox = document.getElementById('cipher-box');
+      const btnWrapper = document.getElementById('decrypt-btn-wrapper');
+      const finalLetter = document.getElementById('final-letter');
+
+      btnWrapper.style.display = 'none';
+
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@%&*';
+      let iterations = 0;
+
+      const interval = setInterval(() => {
+        let randomStr = '';
+        for (let i = 0; i < 180; i++) {
+          randomStr += characters.charAt(Math.floor(Math.random() * characters.length));
+          if (i % 18 === 0) randomStr += ' ';
+        }
+        cipherBox.innerText = `[DECRYPTING BLOCKED CIPHER STREAM]:\n` + randomStr;
+
+        iterations++;
+        if (iterations > 22) {
+          clearInterval(interval);
+          cipherBox.style.display = 'none';
+          finalLetter.style.display = 'block';
+
+          // Confetti Celebration
+          confetti({
+            particleCount: 120,
+            spread: 80,
+            origin: { y: 0.6 }
+          });
+        }
+      }, 70);
+    }
+  </script>
+</body>
+</html>
